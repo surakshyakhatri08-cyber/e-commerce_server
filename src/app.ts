@@ -18,30 +18,37 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/products', productRouter);
 
 //path not found
-app.use((req: Request, res: Response) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     const message = `Can not ${req.method} on ${req.path}`;
 
-    res.status(404).json({
+    next({
         message,
         status: "failed",
-        success: false,
-        data: null,
+        statusCode: 404,
     });
+
+    // res.status(404).json({
+    //     message,
+    //     status: "failed",
+    //     success: false,
+    //     data: null,
+    // });
 });
 
 //error handling middleware
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+    const message = error?.message ?? 'Something went wrong';
+    const status = error?.status ?? "error";
+    const statusCode = error?.statusCode ?? 500;
 
-    res.status(500).json({
-        message: error?.message ?? 'Something went wrong',
-        status: "failed",
+    console.log(error);
+
+    res.status(statusCode).json({
+        message,
+        status,
         success: false,
         data: null,
     });
 });
 
 export default app;
-
-//database connect
-//crud operations
-//error handling middleware
