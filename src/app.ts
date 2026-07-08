@@ -1,5 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import productRouter from './routes/product.route';
+import authRouter from './routes/auth.route';
+import {errorHandler} from './middlewares/errorHandler.middleware';
 
 const app: Application = express();
 
@@ -15,18 +17,27 @@ app.get('/', (req: Request, res: Response) => {
     });
 });
 
-app.use('/products', productRouter);
+app.use('/api/products', productRouter);
+app.use('/api/auth', authRouter);
 
 //path not found
 app.use((req: Request, res: Response, next: NextFunction) => {
     const message = `Can not ${req.method} on ${req.path}`;
+    
+    const error: any = new Error(message);
+    error.status = 'failed';
+    error.statusCode = 404;
 
-    next({
-        message,
-        status: "failed",
-        statusCode: 404,
-    });
+    next(error);
 
+    // next({
+    //     message,
+    //     status: "failed",
+    //     statusCode: 404,
+    // });
+
+
+    //static error handling
     // res.status(404).json({
     //     message,
     //     status: "failed",
@@ -36,19 +47,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 //error handling middleware
-app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-    const message = error?.message ?? 'Something went wrong';
-    const status = error?.status ?? "error";
-    const statusCode = error?.statusCode ?? 500;
-
-    console.log(error);
-
-    res.status(statusCode).json({
-        message,
-        status,
-        success: false,
-        data: null,
-    });
-});
+app.use(errorHandler);
 
 export default app;
