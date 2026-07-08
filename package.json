@@ -4,16 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/server.js"
+    "start": "node ./dist/server.js",
+    "dev": "node ./src/server.ts",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mongoose": "^9.7.4"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surakshyakhatri08-cyber/e-commerce_server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/surakshyakhatri08-cyber/e-commerce_server/issues"
+  },
+  "homepage": "https://github.com/surakshyakhatri08-cyber/e-commerce_server#readme"
 }
