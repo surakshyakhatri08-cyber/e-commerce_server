@@ -1,27 +1,48 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const authSchema: Schema = new Schema({
+
+//user schema
+interface IUser extends Document{
+    name: string;
+    email: string;
+    password: string;
+    role: "USER" | "ADMIN";
+    profile?: string;
+}
+const authSchema: Schema = new Schema<IUser>({
     name: {
         type: String,
         required: [true, 'Name is required'],
+        trim: true,
     },
     email: {
         type: String,
         required: [true, 'Email is required'],
-        unique: true,
+        unique: [true, 'User already exists'],
         lowercase: true,
+        trim: true,
     },
     password: {
         type: String,
         required: [true, 'Password is required'],
+        select: false,
     },
-    profile: {
+
+    role: {
         type: String,
-        required: false,
-        default: '',
+        enum: ["USER", "ADMIN"],
+        default: "USER",
+    },
+
+    //path and public id
+    profile: {   
+        type: String,
+        default: null,
     }
+}, {
+    timestamps: true
 },
 );
 
-const AuthUser = mongoose.model('auth_user', authSchema);
+const AuthUser = mongoose.model<IUser>('auth_user', authSchema);
 export default AuthUser;

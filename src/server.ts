@@ -11,3 +11,6 @@ app.listen(PORT, () => {
     console.log("Server is running at http://localhost:8000");
     console.log("Press ctrl+c for close the server");
 });
+
+
+//name, discription optional, logo/image in brand
