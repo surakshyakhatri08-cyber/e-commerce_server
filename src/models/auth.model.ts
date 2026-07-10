@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { Role } from '../@types/enum.types';
 
 
 //user schema
@@ -6,7 +7,7 @@ interface IUser extends Document{
     name: string;
     email: string;
     password: string;
-    role: "USER" | "ADMIN";
+    role: Role;
     profile?: string;
 }
 const authSchema: Schema = new Schema<IUser>({
@@ -30,8 +31,8 @@ const authSchema: Schema = new Schema<IUser>({
 
     role: {
         type: String,
-        enum: ["USER", "ADMIN"],
-        default: "USER",
+        enum: Object.values(Role),
+        default: Role.USER,
     },
 
     //path and public id

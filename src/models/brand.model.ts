@@ -12,11 +12,12 @@ const brandSchema: Schema = new Schema<IBrand>({
         type: String,
         required: [true, 'Brand name is required'],
         trim: true,
-        unique: true,
+        unique: [true, 'Brand name is already exists'],
     },
     description: {
         type: String,
-        default: null,
+        minLength: 10,
+        trim: true,
     },
     logo: {
         type: String,

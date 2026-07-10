@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+// import { sendResponse } from "../utils/sendResponse.utils";
 
 //error handling middleware
 export const errorHandler = ((error: any, req: Request, res: Response, next: NextFunction) => {
@@ -7,6 +8,14 @@ export const errorHandler = ((error: any, req: Request, res: Response, next: Nex
     const statusCode = error?.statusCode ?? 500;
 
     console.log(error);
+
+    // sendResponse(res, {
+    //             message,
+    //             statusCode,
+    //     data: null,
+    //     stack: error?.stack,
+    // });
+
 
     res.status(statusCode).json({
         message,
