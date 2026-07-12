@@ -15,18 +15,12 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
-    "mongoose": "^9.7.4"
+    "mongoose": "^9.7.4",
+    "multer": "^2.2.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
     "ts-node-dev": "^2.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/surakshyakhatri08-cyber/e-commerce_server.git"
-  },
-  "bugs": {
-    "url": "https://github.com/surakshyakhatri08-cyber/e-commerce_server/issues"
-  },
-  "homepage": "https://github.com/surakshyakhatri08-cyber/e-commerce_server#readme"
+  }
 }

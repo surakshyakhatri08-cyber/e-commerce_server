@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { Role } from '../@types/enum.types';
 
 
+
 //user schema
 interface IUser extends Document{
     name: string;

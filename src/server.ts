@@ -12,5 +12,3 @@ app.listen(PORT, () => {
     console.log("Press ctrl+c for close the server");
 });
 
-
-//name, discription optional, logo/image in brand

@@ -4,10 +4,14 @@ import { comparePassword, hashPassword } from '../utils/bcrypt.utils';
 import AppError from '../utils/customError.utils';
 import { catchAsync } from '../utils/catchAsync.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
+import { userInfo } from 'os';
 
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password } = req.body;
+    const file = req.file;
+
+    console.log(file);
 
     // const user = await AuthUser.findOne({ email });
     // if (user) {
@@ -45,6 +49,10 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
     //hash password
     const hash = await hashPassword(password);
     newUser.password = hash;
+
+    if(file) {
+        newUser.profile = file.path
+    }
 
     //save user
     await newUser.save();

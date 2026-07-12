@@ -1,23 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import Brand from '../models/brand.model';
+import AppError from '../utils/customError.utils';
+import { sendResponse } from '../utils/sendResponse.utils';
+import { catchAsync } from '../utils/catchAsync.utils';
 
 
-export const createBrand = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const createBrand = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const { name, description, logo } = req.body;
 
         if (!name) {
-            const error: any = new Error("Name is required");
-            error.status = "fail";
-            error.statusCode = 400;
-            throw error;
+            throw new AppError('Name is required', 400);
         }
 
         if (!logo) {
-            const error: any = new Error("Logo is required");
-            error.status = "fail";
-            error.statusCode = 400;
-            throw error;
+            throw new AppError('Logo is required', 400);
         }
 
         const newBrand = new Brand({
@@ -28,31 +25,44 @@ export const createBrand = async (req: Request, res: Response, next: NextFunctio
 
         await newBrand.save();
 
-        res.status(201).json({
-            message: 'Brand Created Successfully',
-            status: 'success',
-            success: true,
-            data: newBrand,
+        // res.status(201).json({
+        //     message: 'Brand Created Successfully',
+        //     status: 'success',
+        //     success: true,
+        //     data: newBrand,
+        // });
+
+        sendResponse(res, {
+            message: 'User registered successfully',
+            data: {
+                _id: newBrand._id,
+                name: newBrand.name,
+                description: newBrand.description,
+                logo: newBrand.logo,
+            },
+            statusCode: 201,
+
         });
-    } catch (error) {
-        next(error);
-    }
-};
+});
 
 
-export const getAllBrands = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const getAllBrands = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const brands = await Brand.find({});
-        res.status(200).json({
+
+        // res.status(200).json({
+        //     message: 'Brands Fetched Successfully',
+        //     status: 'success',
+        //     success: true,
+        //     data: brands,
+        // });
+
+        sendResponse(res, {
             message: 'Brands Fetched Successfully',
-            status: 'success',
-            success: true,
             data: brands,
+            statusCode: 200,
         });
-    } catch (error) {
-        next(error);
-    }
-};
+});
 
 
 export const getBrandById = async (req: Request, res: Response, next: NextFunction) => {
@@ -79,7 +89,7 @@ export const getBrandById = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-export const updateBrand = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateBrand = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         const { name, description, logo } = req.body;
