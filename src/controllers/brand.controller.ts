@@ -65,8 +65,8 @@ export const getAllBrands = catchAsync(async (req: Request, res: Response, next:
 });
 
 
-export const getBrandById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const getBrandById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const { id } = req.params;
 
         const brand = await Brand.findOne({ _id: id });
@@ -84,13 +84,10 @@ export const getBrandById = async (req: Request, res: Response, next: NextFuncti
             success: true,
             data: brand,
         });
-    } catch (error) {
-        next(error);
-    }
-};
+});
 
-export const updateBrand = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const updateBrand = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const { id } = req.params;
         const { name, description, logo } = req.body;
 
@@ -114,13 +111,11 @@ export const updateBrand = async (req: Request, res: Response, next: NextFunctio
             success: true,
             data: updatedBrand,
         });
-    } catch (error) {
-        next(error);
-    }
-};
 
-export const deleteBrand = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+});
+
+export const deleteBrand = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const { id } = req.params;
 
         const deletedBrand = await Brand.findByIdAndDelete({ _id: id });
@@ -138,7 +133,4 @@ export const deleteBrand = async (req: Request, res: Response, next: NextFunctio
             success: true,
             data: deletedBrand,
         });
-    } catch (error) {
-        next(error);
-    }
-};
+});
