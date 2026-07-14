@@ -4,7 +4,8 @@ import { comparePassword, hashPassword } from '../utils/bcrypt.utils';
 import AppError from '../utils/customError.utils';
 import { catchAsync } from '../utils/catchAsync.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
-import { userInfo } from 'os';
+import { upload } from '../utils/cloudinary.utils';
+import { generateJwtToken } from '../utils/jwt.utils';
 
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -51,7 +52,11 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
     newUser.password = hash;
 
     if(file) {
-        newUser.profile = file.path
+        const {path, public_id} = await upload(file, '/profile_image');
+        newUser.profile = {
+            path: path,
+            public_id: public_id,
+        };
     }
 
     //save user
@@ -114,15 +119,26 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
     //     return;
     // }
 
+    // jwt token
+    const access_token = generateJwtToken ({
+        _id: user._id,
+        email: user.email,
+        role: user.role
+    });
+
+    const { password: p, __v, ...rest} = user.toObject();
+
     sendResponse(res, {
         message: 'Login successful',
-        data: {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            profile: user.profile,
-        },
+        // data: {
+        //     _id: user._id,
+        //     name: user.name,
+        //     email: user.email,
+        //     role: user.role,
+        //     profile: user.profile,
+        // },
+
+        data: { user: rest, access_token },
         statusCode: 201,
     });
 

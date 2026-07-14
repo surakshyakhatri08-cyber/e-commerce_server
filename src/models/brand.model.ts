@@ -1,10 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { ImageSchema } from './image.model';
 
 
 interface IBrand extends Document {
     name: string;
     description?: string;
-    logo: string;
+    logo: {
+        path: string;
+        public_id: string;
+    };
 }
 
 const brandSchema: Schema = new Schema<IBrand>({
@@ -20,7 +24,7 @@ const brandSchema: Schema = new Schema<IBrand>({
         trim: true,
     },
     logo: {
-        type: String,
+        type: ImageSchema,
         required: [true, 'Brand logo is required'],
         trim: true,
     }

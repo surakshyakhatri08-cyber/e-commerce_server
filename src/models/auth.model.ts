@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { Role } from '../@types/enum.types';
+import { ImageSchema } from './image.model';
 
 
 
@@ -9,7 +10,10 @@ interface IUser extends Document{
     email: string;
     password: string;
     role: Role;
-    profile?: string;
+    profile?: {
+        path: string;
+        public_id: string;
+    };
 }
 const authSchema: Schema = new Schema<IUser>({
     name: {
@@ -38,7 +42,7 @@ const authSchema: Schema = new Schema<IUser>({
 
     //path and public id
     profile: {   
-        type: String,
+        type: ImageSchema,
         default: null,
     }
 }, {

@@ -33,7 +33,7 @@ export const uploader = () => {
     //file filter
     const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
 
-        const file_ext = path.extname(file.originalname);
+        const file_ext = path.extname(file.originalname).toLocaleLowerCase();
         console.log(file);
 
         //check if file ext is allowed
