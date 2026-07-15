@@ -37,3 +37,14 @@ export const upload = async (file: Express.Multer.File, dir = '/') => {
         throw new Error('Something went wrong');
     }
 }
+
+
+// delete file from cloudinary
+export const deleteFileFromCloudinary = async(public_id: string) => {
+    try {
+        await cloudinary.uploader.destroy(public_id);
+        return true;
+    } catch (error) {
+        console.log(error);
+    }
+};

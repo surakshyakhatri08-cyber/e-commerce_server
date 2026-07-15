@@ -11,7 +11,7 @@ interface IJwtPayload {
 export const generateJwtToken = (payload: IJwtPayload) => {
     try {
 
-        return jwt.sign(payload, ENV_CONFIG.JWT_SECRET as string, {
+        return jwt.sign(payload, ENV_CONFIG.JWT_SECRET, {
             expiresIn: ENV_CONFIG.JWT_EXPIRES_IN as any,
             
         });

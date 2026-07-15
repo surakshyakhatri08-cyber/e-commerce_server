@@ -3,7 +3,7 @@ import Brand from '../models/brand.model';
 import AppError from '../utils/customError.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
 import { catchAsync } from '../utils/catchAsync.utils';
-import { upload } from '../utils/cloudinary.utils';
+import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
 
 
 export const createBrand = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -43,7 +43,7 @@ export const createBrand = catchAsync(async (req: Request, res: Response, next: 
     // });
 
     sendResponse(res, {
-        message: 'User registered successfully',
+        message: 'Brand created successfully',
         data: {
             _id: newBrand._id,
             name: newBrand.name,
@@ -102,17 +102,35 @@ export const getBrandById = catchAsync(async (req: Request, res: Response, next:
 export const updateBrand = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const { id } = req.params;
-    const { name, description, logo } = req.body;
+    const { name, description } = req.body;
+    const file = req.file;
 
-    const updatedBrand = await Brand.findByIdAndUpdate(
+    const updatedBrand = await Brand.findOne(
         { _id: id },
-        { name, description, logo },
+        { name, description },
         { new: true, runValidators: true }
     );
 
     if (!updatedBrand) {
         throw new AppError(`Brand with id: ${id} not found`, 404);
     }
+
+    if (name) updatedBrand.name = name;
+    if (description) updatedBrand.description = description;
+
+
+    if (file) {
+        // delete image
+        await deleteFileFromCloudinary(updatedBrand.logo.public_id);
+        //uploaded new image
+        const { path, public_id } = await upload(file, '/logo_image');
+        updatedBrand.logo = {
+            path: path,
+            public_id: public_id,
+        };
+    }
+
+    await updatedBrand.save();
 
     // res.status(200).json({
     //     message: 'Brand Updated Successfully',
@@ -123,7 +141,7 @@ export const updateBrand = catchAsync(async (req: Request, res: Response, next: 
 
     sendResponse(res, {
         message: 'Brand Updated Successfully',
-        data: updateBrand,
+        data: updatedBrand,
         statusCode: 200,
     });
 
@@ -133,11 +151,17 @@ export const deleteBrand = catchAsync(async (req: Request, res: Response, next: 
 
     const { id } = req.params;
 
-    const deletedBrand = await Brand.findByIdAndDelete({ _id: id });
+    const deletedBrand = await Brand.findOne({ _id: id });
 
     if (!deletedBrand) {
         throw new AppError(`Brand with id: ${id} not found`, 404);
     }
+
+    // delete image
+    await deleteFileFromCloudinary(deletedBrand.logo.public_id);
+
+    //delete brand
+    await deletedBrand.deleteOne();
 
     // res.status(200).json({
     //     message: 'Brand Deleted Successfully',

@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import productRouter from './routes/product.route';
 import authRouter from './routes/auth.route';
 import brandRouter from './routes/brand.route';
+import categoryRouter from './routes/category.route';
 import {errorHandler} from './middlewares/errorHandler.middleware';
 
 const app: Application = express();
@@ -21,6 +22,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/products', productRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/brands', brandRouter);
+app.use('/api/categories', categoryRouter);
 
 //path not found
 app.use((req: Request, res: Response, next: NextFunction) => {
