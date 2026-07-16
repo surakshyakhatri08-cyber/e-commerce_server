@@ -6,6 +6,7 @@ import { catchAsync } from '../utils/catchAsync.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
 import { upload } from '../utils/cloudinary.utils';
 import { generateJwtToken } from '../utils/jwt.utils';
+import ENV_CONFIG from '../config/env.config';
 
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -124,6 +125,14 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
         _id: user._id,
         email: user.email,
         role: user.role
+    });
+
+    //set cookie
+    res.cookie('access_token', access_token, {
+        secure: ENV_CONFIG.NODE_ENV === 'development' ? false : true,
+        httpOnly: ENV_CONFIG.NODE_ENV === 'development' ? false : true,
+        maxAge: ENV_CONFIG.COOKIE_EXPIRY * 24 * 60 * 60 * 1000,
+        sameSite: ENV_CONFIG.NODE_ENV === 'development' ? 'lax' : 'none',
     });
 
     const { password: p, __v, ...rest} = user.toObject();

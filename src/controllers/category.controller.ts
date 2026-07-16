@@ -83,8 +83,6 @@ export const updateCategory = catchAsync(async(req: Request, res: Response, next
 
     const category = await Category.findOne(
         { _id: id },
-        {name, description },
-        {new: true, runValidators: true},
     );
 
     if(!category) {
@@ -95,7 +93,7 @@ export const updateCategory = catchAsync(async(req: Request, res: Response, next
     if(description) category.description = description;
 
     if(file) {
-        deleteFileFromCloudinary(category.image.public_id);
+       await deleteFileFromCloudinary(category.image.public_id);
         const { path, public_id } = await upload(file, '/image');
         category.image = {
             path: path,
@@ -104,11 +102,12 @@ export const updateCategory = catchAsync(async(req: Request, res: Response, next
     }
 
     await category.save();
+    console.log(category);
 
     sendResponse(res, {
         message: 'Category updated successfully',
         data: {
-            _id: category.id,
+            _id: category._id,
             name: category.name,
             description: category.description,
             image: category.image,

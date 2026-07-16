@@ -107,8 +107,6 @@ export const updateBrand = catchAsync(async (req: Request, res: Response, next: 
 
     const updatedBrand = await Brand.findOne(
         { _id: id },
-        { name, description },
-        { new: true, runValidators: true }
     );
 
     if (!updatedBrand) {
