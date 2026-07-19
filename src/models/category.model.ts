@@ -1,9 +1,11 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import { ImageSchema } from "./image.model";
+import { Role } from "../@types/enum.types";
 
-interface ICategory extends Document{
+interface ICategory extends Document {
     name: string;
     description: string;
+    role: Role
     image: {
         path: string,
         public_id: string,
@@ -23,6 +25,12 @@ const categorySchema: Schema = new mongoose.Schema<ICategory>({
         trim: true,
     },
 
+    role: {
+        type: String,
+        enum: Object.values(Role),
+        default: Role.USER,
+    },
+
     image: {
         type: ImageSchema,
         required: [true, 'Image is required'],
@@ -30,6 +38,6 @@ const categorySchema: Schema = new mongoose.Schema<ICategory>({
     },
 });
 
-const Category = mongoose.model<ICategory> ('category', categorySchema);
+const Category = mongoose.model<ICategory>('category', categorySchema);
 
 export default Category;

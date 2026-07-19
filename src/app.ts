@@ -4,10 +4,12 @@ import authRouter from './routes/auth.route';
 import brandRouter from './routes/brand.route';
 import categoryRouter from './routes/category.route';
 import {errorHandler} from './middlewares/errorHandler.middleware';
+import cookieParser from 'cookie-parser';
 
 const app: Application = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 //health route
 app.get('/', (req: Request, res: Response) => {

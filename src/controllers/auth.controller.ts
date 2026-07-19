@@ -4,7 +4,7 @@ import { comparePassword, hashPassword } from '../utils/bcrypt.utils';
 import AppError from '../utils/customError.utils';
 import { catchAsync } from '../utils/catchAsync.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
-import { upload } from '../utils/cloudinary.utils';
+import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
 import { generateJwtToken } from '../utils/jwt.utils';
 import ENV_CONFIG from '../config/env.config';
 
@@ -52,8 +52,8 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
     const hash = await hashPassword(password);
     newUser.password = hash;
 
-    if(file) {
-        const {path, public_id} = await upload(file, '/profile_image');
+    if (file) {
+        const { path, public_id } = await upload(file, '/profile_image');
         newUser.profile = {
             path: path,
             public_id: public_id,
@@ -121,7 +121,7 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
     // }
 
     // jwt token
-    const access_token = generateJwtToken ({
+    const access_token = generateJwtToken({
         _id: user._id,
         email: user.email,
         role: user.role
@@ -135,7 +135,7 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
         sameSite: ENV_CONFIG.NODE_ENV === 'development' ? 'lax' : 'none',
     });
 
-    const { password: p, __v, ...rest} = user.toObject();
+    const { password: p, __v, ...rest } = user.toObject();
 
     sendResponse(res, {
         message: 'Login successful',
@@ -164,4 +164,38 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
     //         profile: user.profile,
     //     },
     // });
+});
+
+export const changeProfile = catchAsync(async (req: Request, res: Response) => {
+    const file = req.file;
+    const userId = req.user._id;
+
+    if (!file) {
+        throw new AppError('Image is required', 400);
+    }
+
+
+    const user = await AuthUser.findOne({ _id: userId });
+
+    if(!user) {
+        throw new AppError('User not found', 404);
+    }
+
+    const {path, public_id} = await upload(file, '/profile_image');
+    if(user.profile) {
+        deleteFileFromCloudinary(user.profile.public_id);
+    }
+
+    user.profile = {
+        path,
+        public_id,
+    };
+
+    await user.save();
+
+    sendResponse(res, {
+        message: 'Profile image updated',
+        data: user,
+        statusCode: 200,
+    });
 });
