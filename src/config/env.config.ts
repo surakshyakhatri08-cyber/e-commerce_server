@@ -16,6 +16,15 @@ const ENV_CONFIG = {
 
     //  cookie
     COOKIE_EXPIRY: Number(process.env.COOKIE_EXPIRY) ?? 7,
+
+    // Nodemailer
+    EMAIL_HOST: process.env.EMAIL_HOST!!,
+    EMAIL_SERVICE: process.env.EMAIL_SERVICE || 'gmail',
+    EMAIL_PORT: Number(process.env.EMAIL_PORT) || 465,
+    EMAIL_SECURE: process.env.EMAIL_SECURE === 'true',
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS,
+    SENDER_NAME: process.env.SENDER_NAME,
 };
 
 export default ENV_CONFIG;

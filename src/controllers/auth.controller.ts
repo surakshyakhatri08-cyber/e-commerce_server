@@ -7,6 +7,7 @@ import { sendResponse } from '../utils/sendResponse.utils';
 import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
 import { generateJwtToken } from '../utils/jwt.utils';
 import ENV_CONFIG from '../config/env.config';
+import { sendEmail } from '../utils/sendEmail.utils';
 
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -62,6 +63,16 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
 
     //save user
     await newUser.save();
+
+    await sendEmail({
+        to: newUser.email,
+        subject: 'Account Created',
+        html: `<div>
+        <h3>Welcome, ${newUser.name || 'User'}! <h3>
+        <p>Your account has been created successfully.</p>
+        </div>`,
+        attachments: []
+    });
 
     //success response
     sendResponse(res, {
@@ -137,6 +148,16 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
 
     const { password: p, __v, ...rest } = user.toObject();
 
+    await sendEmail({
+        to: user.email,
+        subject: 'New Login Alert',
+        html: `<div>
+      <h3>Security Alert ! </h3>
+      <p>Hello ${user.name}, your account was just logged in.</p>
+    </div>`,
+        attachments: []
+    });
+
     sendResponse(res, {
         message: 'Login successful',
         // data: {
@@ -177,12 +198,12 @@ export const changeProfile = catchAsync(async (req: Request, res: Response) => {
 
     const user = await AuthUser.findOne({ _id: userId });
 
-    if(!user) {
+    if (!user) {
         throw new AppError('User not found', 404);
     }
 
-    const {path, public_id} = await upload(file, '/profile_image');
-    if(user.profile) {
+    const { path, public_id } = await upload(file, '/profile_image');
+    if (user.profile) {
         deleteFileFromCloudinary(user.profile.public_id);
     }
 

@@ -133,18 +133,19 @@ export const updateProduct = catchAsync(async (req: Request, res: Response, next
         newArrival,
         brand,
         category,
+        deleted_images,
     } = req.body;
+
+    const { cover_image, images } = req.files as {
+        cover_image?: Express.Multer.File[];
+        images?: Express.Multer.File[];
+    };
 
     const product = await Product.findOne({ _id: id });
 
     if (!product) {
         throw new AppError(`Product with id: ${id} is not found`, 404);
     }
-
-    const { cover_image, images } = req.files as {
-        cover_image?: Express.Multer.File[];
-        images?: Express.Multer.File[];
-    };
 
     if (name) product.name = name;
     if (description) product.description = description;
@@ -165,7 +166,15 @@ export const updateProduct = catchAsync(async (req: Request, res: Response, next
             public_id,
         };
     }
+    // if deleted images
+    if (deleted_images && Array.isArray(deleted_images) && deleted_images.length > 0) {
+        //delete image from cloud
+        // filter product images
+    }
 
+    //if new images
+        //upload new images to cloud
+        // add images on product.images
     if (images && images.length > 0) {
 
         await Promise.all(
@@ -197,38 +206,33 @@ export const updateProduct = catchAsync(async (req: Request, res: Response, next
 
 export const deleteProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-        const { id } = req.params;
+    const { id } = req.params;
 
-        const product = await Product.findOne({ _id: id });
+    const product = await Product.findOne({ _id: id });
 
-        if (!product) {
-            throw new AppError(`Product with id: ${id} is not found`, 404);
-        }
-
-        if (product.cover_image) {
-            await deleteFileFromCloudinary(product.cover_image.public_id);
-        }
-
-        if (product.images && product.images.length > 0) {
-
-            await Promise.all(
-                product.images.map((img) =>
-                    deleteFileFromCloudinary(img.public_id)
-                )
-            );
-        }
-
-        await product.deleteOne();
-
-        sendResponse(res, {
-            message: "Product Deleted Successfully",
-            data: null,
-            statusCode: 200,
-        });
+    if (!product) {
+        throw new AppError(`Product with id: ${id} is not found`, 404);
     }
+
+    if (product.cover_image) {
+        await deleteFileFromCloudinary(product.cover_image.public_id);
+    }
+
+    if (product.images && product.images.length > 0) {
+
+        await Promise.all(
+            product.images.map((img) =>
+                deleteFileFromCloudinary(img.public_id)
+            )
+        );
+    }
+
+    await product.deleteOne();
+
+    sendResponse(res, {
+        message: "Product Deleted Successfully",
+        data: null,
+        statusCode: 200,
+    });
+}
 );
-
-
-
-// wishlist
-//user: user_id -> token, product: product_id -> body
