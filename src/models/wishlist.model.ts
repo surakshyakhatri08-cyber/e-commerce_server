@@ -16,7 +16,7 @@ const wishlistSchema: Schema = new mongoose.Schema<IWishlist>({
         ref: "product",
         required: [true, "Product is required"],
     }
-});
+}, { timestamps: true});
 
 const WishList = mongoose.model<IWishlist>('wishlist', wishlistSchema);
 

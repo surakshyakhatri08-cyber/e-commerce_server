@@ -8,6 +8,7 @@ import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
 import { generateJwtToken } from '../utils/jwt.utils';
 import ENV_CONFIG from '../config/env.config';
 import { sendEmail } from '../utils/sendEmail.utils';
+import { newAccountCreatedHtml, newLoginDetectedHtml } from '../utils/emailTemplate.utils';
 
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -16,26 +17,6 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
 
     console.log(file);
 
-    // const user = await AuthUser.findOne({ email });
-    // if (user) {
-    //     res.status(400).json({
-    //         message: 'Email is already registered',
-    //         status: 'failed',
-    //         success: false,
-    //         data: null,
-    //     });
-    //     return;
-    // }
-
-    //long error throw
-    // if (!name) {
-    //     const error: any = new Error("Name is required");
-    //     error.status = "fail";
-    //     error.statusCode = 400;
-    //     throw error;
-    // }
-
-    //in short error throw
     if (!name) throw new AppError('Name is required', 400);
 
     if (!email) throw new AppError('Email is required', 400);
@@ -64,15 +45,25 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
     //save user
     await newUser.save();
 
+    // await sendEmail({
+    //     to: newUser.email,
+    //     subject: 'Account Created',
+    //     html: `<div>
+    //     <h3>Welcome, ${newUser.name || 'User'}! <h3>
+    //     <p>Your account has been created successfully.</p>
+    //     </div>`,
+    //     attachments: []
+    // });
+
     await sendEmail({
         to: newUser.email,
         subject: 'Account Created',
-        html: `<div>
-        <h3>Welcome, ${newUser.name || 'User'}! <h3>
-        <p>Your account has been created successfully.</p>
-        </div>`,
-        attachments: []
-    });
+        html: newAccountCreatedHtml({
+            fullName: newUser.name,
+            email: newUser.email,
+        }),
+        attachments: [],
+    })
 
     //success response
     sendResponse(res, {
@@ -86,21 +77,6 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
         },
         statusCode: 201,
     });
-
-    // res.status(201).json({
-    //     message: 'User registered successfully',
-    //     status: 'success',
-    //     success: true,
-    //     // data: newUser,
-    //     //if password is hidden in repsonse
-    //     data: {
-    //         _id: newUser._id,
-    //         name: newUser.name,
-    //         email: newUser.email,
-    //         role: newUser.role,
-    //         profile: newUser.profile,
-    //     },
-    // });
 });
 
 
@@ -120,16 +96,6 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
     const isPasswordMatched = await comparePassword(password, user.password);
 
     if (!isPasswordMatched) throw new AppError('Invalid Credentials', 400);
-
-    // if (password !== user.password) {
-    //     res.status(401).json({
-    //         message: 'Invalid email or password',
-    //         status: 'failed',
-    //         success: false,
-    //         data: null,
-    //     });
-    //     return;
-    // }
 
     // jwt token
     const access_token = generateJwtToken({
@@ -151,10 +117,12 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
     await sendEmail({
         to: user.email,
         subject: 'New Login Alert',
-        html: `<div>
-      <h3>Security Alert ! </h3>
-      <p>Hello ${user.name}, your account was just logged in.</p>
-    </div>`,
+        html: newLoginDetectedHtml({
+            email: user.email,
+            fullName: user.name,
+            loginAt: new Date(Date.now()),
+            userAgent: req.headers['user-agent'] as string,
+        }),
         attachments: []
     });
 
@@ -171,20 +139,6 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
         data: { user: rest, access_token },
         statusCode: 201,
     });
-
-    // res.status(200).json({
-    //     message: 'Login successful',
-    //     status: 'success',
-    //     success: true,
-    //     // data: user,
-    //     data: {
-    //         _id: user._id,
-    //         name: user.name,
-    //         email: user.email,
-    //         role: user.role,
-    //         profile: user.profile,
-    //     },
-    // });
 });
 
 export const changeProfile = catchAsync(async (req: Request, res: Response) => {
