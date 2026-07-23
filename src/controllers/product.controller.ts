@@ -11,9 +11,9 @@ const folder = '/products';
 export const getAllProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const filter: Record<string, any> = {};
-    const { query, category, brand, minPrice, maxPrice } = req.query;
+    const { query, category, brand, Price, minPrice, maxPrice, neqPrice } = req.query;
 
-    if(query) {
+    if (query) {
         filter.$or = [
             {
                 name: {
@@ -30,19 +30,44 @@ export const getAllProducts = catchAsync(async (req: Request, res: Response, nex
         ];
     }
 
-    if(category) {
+    if (category) {
         filter.category = category;
     }
 
-    if(brand) {
+    if (brand) {
         filter.brand = brand;
     }
 
     //todo: price range filter(lte, gte, neq, eq)
+    if (
+        Price !== undefined ||
+        minPrice !== undefined ||
+        maxPrice !== undefined ||
+        neqPrice !== undefined
+    ) {
+        filter.price = {};
+
+        if (
+            Price !== undefined) {
+            filter.price.$eq = Number(Price);
+        }
+
+        if (minPrice !== undefined) {
+            filter.price.$gte = Number(minPrice);
+        }
+
+        if (maxPrice !== undefined) {
+            filter.price.$lte = Number(maxPrice);
+        }
+
+        if (neqPrice !== undefined) {
+            filter.price.$ne = Number(neqPrice);
+        }
+    }
 
     const products = await Product.find(filter)
-    .populate('category')
-    .populate('brand');
+        .populate('category')
+        .populate('brand');
 
     sendResponse(res, {
         message: 'Products Fetched Successfully',
@@ -55,7 +80,9 @@ export const getAllProducts = catchAsync(async (req: Request, res: Response, nex
 export const getProductById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const { id } = req.params;
-    const product = await Product.findOne({ _id: id });
+    const product = await Product.findOne({ _id: id })
+        .populate('category')
+        .populate('brand');
 
     if (!product) {
         throw new AppError(`Product with id: ${id} is not found`, 404);
@@ -110,7 +137,6 @@ export const createProduct = catchAsync(async (req: Request, res: Response, next
     if (!category) {
         throw new AppError('Category is required', 400);
     }
-
 
     const product = new Product({
         name,
@@ -204,8 +230,8 @@ export const updateProduct = catchAsync(async (req: Request, res: Response, next
     }
 
     //if new images
-        //upload new images to cloud
-        // add images on product.images
+    //upload new images to cloud
+    // add images on product.images
     if (images && images.length > 0) {
 
         await Promise.all(

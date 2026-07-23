@@ -1,3 +1,4 @@
+import { Role } from './../@types/enum.types';
 import { Request, Response, NextFunction } from 'express';
 import AuthUser from '../models/auth.model';
 import { comparePassword, hashPassword } from '../utils/bcrypt.utils';
@@ -12,7 +13,7 @@ import { newAccountCreatedHtml, newLoginDetectedHtml } from '../utils/emailTempl
 
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
     const file = req.file;
 
     console.log(file);
@@ -28,6 +29,7 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
         name,
         email,
         password,
+        role,
     });
 
     //hash password

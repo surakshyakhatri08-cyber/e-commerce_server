@@ -9,7 +9,12 @@ import { sendResponse } from "../utils/sendResponse.utils";
 export const getMyCart = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user._id;
 
-    let cart = await Cart.findOne({ user }).populate("items.product");
+    let cart = await Cart.findOne({ user })
+    .populate('user', 'name email role')
+    .populate({
+        path: 'items.product',
+        select: 'name stock price',
+    });
 
     if (!cart) {
         cart = await Cart.create({ user, items: [] });

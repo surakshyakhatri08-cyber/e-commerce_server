@@ -9,7 +9,7 @@ const wishlistSchema: Schema = new mongoose.Schema<IWishlist>({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "auth_user",
-        required: [true, "Product is required"],
+        required: [true, "User is required"],
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
