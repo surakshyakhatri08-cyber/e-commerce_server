@@ -25,6 +25,8 @@ const cartSchema = new mongoose.Schema<ICart>({
         quantity: {
             type: Number,
             required: [true, 'Quantity is required'],
+            min: [1, 'Quantity cannot be less than 1'],
+            default: 1,
         }
     }],
 }, { timestamps: true });

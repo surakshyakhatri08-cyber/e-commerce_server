@@ -4,6 +4,7 @@ import authRouter from './routes/auth.route';
 import brandRouter from './routes/brand.route';
 import categoryRouter from './routes/category.route';
 import wishlistRouter from './routes/wishlist.route';
+import cartRouter from './routes/cart.route';
 import {errorHandler} from './middlewares/errorHandler.middleware';
 import cookieParser from 'cookie-parser';
 
@@ -27,6 +28,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/brands', brandRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/wishlists', wishlistRouter);
+app.use('/api/carts', cartRouter);
 
 
 //path not found
@@ -38,21 +40,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     error.statusCode = 404;
 
     next(error);
-
-    // next({
-    //     message,
-    //     status: "failed",
-    //     statusCode: 404,
-    // });
-
-
-    //static error handling
-    // res.status(404).json({
-    //     message,
-    //     status: "failed",
-    //     success: false,
-    //     data: null,
-    // });
 });
 
 //error handling middleware
