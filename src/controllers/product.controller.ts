@@ -10,8 +10,39 @@ const folder = '/products';
 
 export const getAllProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const filter = {};
-    const products = await Product.find(filter);
+    const filter: Record<string, any> = {};
+    const { query, category, brand, minPrice, maxPrice } = req.query;
+
+    if(query) {
+        filter.$or = [
+            {
+                name: {
+                    $regex: query,
+                    $options: 'i',
+                },
+            },
+            {
+                description: {
+                    $regex: query,
+                    $options: 'i',
+                },
+            },
+        ];
+    }
+
+    if(category) {
+        filter.category = category;
+    }
+
+    if(brand) {
+        filter.brand = brand;
+    }
+
+    //todo: price range filter(lte, gte, neq, eq)
+
+    const products = await Product.find(filter)
+    .populate('category')
+    .populate('brand');
 
     sendResponse(res, {
         message: 'Products Fetched Successfully',

@@ -35,13 +35,6 @@ export const createBrand = catchAsync(async (req: Request, res: Response, next: 
 
     await newBrand.save();
 
-    // res.status(201).json({
-    //     message: 'Brand Created Successfully',
-    //     status: 'success',
-    //     success: true,
-    //     data: newBrand,
-    // });
-
     sendResponse(res, {
         message: 'Brand created successfully',
         data: {
@@ -58,14 +51,34 @@ export const createBrand = catchAsync(async (req: Request, res: Response, next: 
 
 export const getAllBrands = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const brands = await Brand.find({});
+    const filter: Record<string, any> = {};
+    const { query } = req.query;
+    if(query) {
 
-    // res.status(200).json({
-    //     message: 'Brands Fetched Successfully',
-    //     status: 'success',
-    //     success: true,
-    //     data: brands,
-    // });
+        // for single object
+        // filter.name = {
+        //     $regex: query,
+        //     $options: 'i',
+        // };
+
+
+        //for multiple
+        filter.$or = [
+            {
+                name: {
+                    $regex: query,
+                    $options: 'i',
+                },
+            },
+            {
+                description: {
+                    $regex: query,
+                    $options: 'i',
+                },
+            },
+        ];
+    }
+    const brands = await Brand.find(filter);
 
     sendResponse(res, {
         message: 'Brands Fetched Successfully',
@@ -84,13 +97,6 @@ export const getBrandById = catchAsync(async (req: Request, res: Response, next:
     if (!brand) {
         throw new AppError(`Brand with id: ${id} not found`, 404);
     }
-
-    // res.status(200).json({
-    //     message: 'Brand Fetched Successfully',
-    //     status: 'success',
-    //     success: true,
-    //     data: brand,
-    // });
 
     sendResponse(res, {
         message: 'Brand Fetched Successfully',
@@ -130,13 +136,6 @@ export const updateBrand = catchAsync(async (req: Request, res: Response, next: 
 
     await updatedBrand.save();
 
-    // res.status(200).json({
-    //     message: 'Brand Updated Successfully',
-    //     status: 'success',
-    //     success: true,
-    //     data: updatedBrand,
-    // });
-
     sendResponse(res, {
         message: 'Brand Updated Successfully',
         data: updatedBrand,
@@ -160,13 +159,6 @@ export const deleteBrand = catchAsync(async (req: Request, res: Response, next: 
 
     //delete brand
     await deletedBrand.deleteOne();
-
-    // res.status(200).json({
-    //     message: 'Brand Deleted Successfully',
-    //     status: 'success',
-    //     success: true,
-    //     data: deletedBrand,
-    // });
 
     sendResponse(res, {
         message: 'Brand Deleted Successfully',

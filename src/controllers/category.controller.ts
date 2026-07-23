@@ -6,16 +6,16 @@ import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
 
 
-export const createCategory = catchAsync(async( req: Request, res: Response, next: NextFunction ) => {
+export const createCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { name, description } = req.body;
     const file = req.file;
 
 
-    if(!name) {
+    if (!name) {
         throw new AppError('Name is required', 400);
     }
 
-    if(!file) {
+    if (!file) {
         throw new AppError('File Image is required', 400);
     }
 
@@ -24,8 +24,8 @@ export const createCategory = catchAsync(async( req: Request, res: Response, nex
         description,
     });
 
-    if(file) {
-        const {path, public_id} = await upload(file, '/image');
+    if (file) {
+        const { path, public_id } = await upload(file, '/image');
         category.image = {
             path: path,
             public_id: public_id,
@@ -46,8 +46,28 @@ export const createCategory = catchAsync(async( req: Request, res: Response, nex
     });
 });
 
-export const getAllCategory = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    const categories = await Category.find({});
+export const getAllCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const filter: Record<string, any> = {};
+    const { query } = req.query;
+
+    if (query) {
+        filter.$or = [
+            {
+                name: {
+                    $regex: query,
+                    $options: 'i',
+                },
+            },
+            {
+                description: {
+                    $regex: query,
+                    $options: 'i',
+                },
+            },
+        ];
+    }
+    const categories = await Category.find(filter);
 
     sendResponse(res, {
         message: 'Category fetched successfully',
@@ -56,11 +76,11 @@ export const getAllCategory = catchAsync(async(req: Request, res: Response, next
     });
 });
 
-export const getCategoryById = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+export const getCategoryById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const category = await Category.findOne({ _id: id });
 
-    if(!category) {
+    if (!category) {
         throw new AppError(`Category with id: ${id} is not found`, 404);
     }
 
@@ -76,7 +96,7 @@ export const getCategoryById = catchAsync(async(req: Request, res: Response, nex
     });
 });
 
-export const updateCategory = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+export const updateCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const { name, description } = req.body;
     const file = req.file;
@@ -85,15 +105,15 @@ export const updateCategory = catchAsync(async(req: Request, res: Response, next
         { _id: id },
     );
 
-    if(!category) {
+    if (!category) {
         throw new AppError(`Category with id: ${id} is not found`, 400);
     }
 
-    if(name) category.name = name;
-    if(description) category.description = description;
+    if (name) category.name = name;
+    if (description) category.description = description;
 
-    if(file) {
-       await deleteFileFromCloudinary(category.image.public_id);
+    if (file) {
+        await deleteFileFromCloudinary(category.image.public_id);
         const { path, public_id } = await upload(file, '/image');
         category.image = {
             path: path,
@@ -116,13 +136,13 @@ export const updateCategory = catchAsync(async(req: Request, res: Response, next
     })
 });
 
-export const deleteCategory = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+export const deleteCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const { id } = req.params;
 
-    const category = await Category.findOne({ _id: id});
+    const category = await Category.findOne({ _id: id });
 
-    if(!category) {
+    if (!category) {
         throw new AppError(`Category with id: ${id} is not found`, 404);
     }
 
