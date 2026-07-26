@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import WishList from "../models/wishlist.model";
 import Product from "../models/product.model";
-import AuthUser from "../models/auth.model";
 import AppError from "../utils/customError.utils";
 import { catchAsync } from "../utils/catchAsync.utils";
 import { sendResponse } from "../utils/sendResponse.utils";
