@@ -5,6 +5,7 @@ import AuthUser from "../models/auth.model";
 import AppError from "../utils/customError.utils";
 import { catchAsync } from "../utils/catchAsync.utils";
 import { sendResponse } from "../utils/sendResponse.utils";
+import { getPaginationMetaData } from "../utils/pagination.utils";
 
 
 export const createWishlist = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -49,14 +50,33 @@ export const createWishlist = catchAsync(async (req: Request, res: Response, nex
 export const getMyWishlist = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const user = req.user._id;
+    const filter: Record<string, any> = {};
+    const {
+        page = 1,
+        perPage = 10,
+        sortBy = 'createdAt',
+        order = 'DESC',
+    } = req.query;
+
+    const currentPage = Number(page);
+    const limit = Number(perPage);
+    const skip = (currentPage - 1) * limit;
 
     const wishlist = await WishList.find({ user })
         .populate('user', 'name email role')
-        .populate("product");
+        .populate("product")
+        .limit(limit)
+        .skip(skip)
+        .sort({ [sortBy as string]: order === 'DESC' ? -1 : 1 });
+
+    const totalCount = await WishList.countDocuments(filter);
 
     sendResponse(res, {
         message: "Wishlist fetched successfully",
-        data: wishlist,
+        data: {
+            wishlist,
+            pagination: getPaginationMetaData(totalCount, limit, currentPage),
+        },
         statusCode: 200,
     });
 }

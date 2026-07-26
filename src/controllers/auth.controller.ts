@@ -1,4 +1,3 @@
-import { Role } from './../@types/enum.types';
 import { Request, Response, NextFunction } from 'express';
 import AuthUser from '../models/auth.model';
 import { comparePassword, hashPassword } from '../utils/bcrypt.utils';
@@ -143,7 +142,7 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
     });
 });
 
-export const changeProfile = catchAsync(async (req: Request, res: Response) => {
+export const changeProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const file = req.file;
     const userId = req.user._id;
 
@@ -176,3 +175,74 @@ export const changeProfile = catchAsync(async (req: Request, res: Response) => {
         statusCode: 200,
     });
 });
+
+// get profile
+export const getProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.user._id;
+
+    const user = await AuthUser.findOne({ _id: id });
+
+    if (!user) {
+        throw new AppError('User not found', 400);
+    }
+
+    await user.save();
+
+    sendResponse(res, {
+        message: 'User profile fetched successfully',
+        data: user,
+        statusCode: 200,
+    });
+});
+
+// change password
+export const changePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.user._id;
+    const { password, newPassword } = req.body;
+
+    if (!newPassword) {
+        throw new AppError('New password is required', 400);
+    }
+
+    if (!password) {
+        throw new AppError('Old password is required', 400);
+    }
+
+    const user = await AuthUser.findOne({ _id: id }).select('+password');
+    if (!user) {
+        throw new AppError('USer not found', 400);
+    }
+
+    const isOldPassword = await comparePassword(password, user.password);
+    if (!isOldPassword) {
+        throw new AppError('Password is not matched', 400);
+    }
+
+    const hash = await hashPassword(newPassword);
+    user.password = hash;
+
+    await user.save();
+
+    sendResponse(res, {
+        message: 'Password is changed',
+        data: null,
+        statusCode: 200,
+    });
+});
+
+// logout
+export const logout = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie('access_token', {
+        secure: ENV_CONFIG.NODE_ENV === 'development' ? false : true,
+        httpOnly: ENV_CONFIG.NODE_ENV === 'development' ? false : true,
+        maxAge: Date.now(),
+        sameSite: ENV_CONFIG.NODE_ENV === 'development' ? 'lax' : 'none',
+    });
+
+    sendResponse(res, {
+        message: 'Logout Successfully',
+        data: null,
+        statusCode: 200,
+    });
+});
+// 

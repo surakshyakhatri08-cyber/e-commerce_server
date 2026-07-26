@@ -4,6 +4,7 @@ import AppError from '../utils/customError.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
 import { catchAsync } from '../utils/catchAsync.utils';
 import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
+import { getPaginationMetaData } from '../utils/pagination.utils';
 
 
 export const createBrand = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -52,7 +53,19 @@ export const createBrand = catchAsync(async (req: Request, res: Response, next: 
 export const getAllBrands = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const filter: Record<string, any> = {};
-    const { query } = req.query;
+
+    //pagination
+    const { 
+        query, 
+        page = 1, 
+        perPage = 2, 
+        sortBy = 'createdAt', 
+        order = 'DESC' 
+    } = req.query;
+    const currentPage = Number(page);
+    const limit = Number(perPage);
+    const skip = (currentPage - 1) * limit;
+
     if(query) {
 
         // for single object
@@ -78,11 +91,19 @@ export const getAllBrands = catchAsync(async (req: Request, res: Response, next:
             },
         ];
     }
-    const brands = await Brand.find(filter);
+    const brands = await Brand.find(filter)
+    .limit(limit)
+    .skip(skip)
+    .sort({ [sortBy as string]: order === 'DESC' ? -1: 1});
+
+    const totalCount = await Brand.countDocuments(filter);
 
     sendResponse(res, {
         message: 'Brands Fetched Successfully',
-        data: brands,
+        data: {
+            brands,
+            pagination: getPaginationMetaData(totalCount, limit, currentPage),
+        },
         statusCode: 200,
     });
 });

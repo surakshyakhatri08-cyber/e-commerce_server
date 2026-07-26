@@ -4,6 +4,7 @@ import AppError from '../utils/customError.utils';
 import Category from '../models/category.model';
 import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
 import { sendResponse } from '../utils/sendResponse.utils';
+import { getPaginationMetaData } from '../utils/pagination.utils';
 
 
 export const createCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -49,7 +50,17 @@ export const createCategory = catchAsync(async (req: Request, res: Response, nex
 export const getAllCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const filter: Record<string, any> = {};
-    const { query } = req.query;
+    const {
+        query,
+        page = 1,
+        perPage = 10,
+        sortBy = 'createdAt',
+        order = 'DESC',
+    } = req.query;
+
+    const currentPage = Number(page);
+    const limit = Number(perPage);
+    const skip = (currentPage - 1) * limit;
 
     if (query) {
         filter.$or = [
@@ -67,11 +78,19 @@ export const getAllCategory = catchAsync(async (req: Request, res: Response, nex
             },
         ];
     }
-    const categories = await Category.find(filter);
+    const categories = await Category.find(filter)
+        .limit(limit)
+        .skip(skip)
+        .sort({ [sortBy as string]: order === 'DESC' ? -1 : 1 });
+
+    const totalCount = await Category.countDocuments(filter);
 
     sendResponse(res, {
         message: 'Category fetched successfully',
-        data: categories,
+        data: {
+            categories,
+            pagination: getPaginationMetaData(totalCount, limit, currentPage),
+        },
         statusCode: 200,
     });
 });

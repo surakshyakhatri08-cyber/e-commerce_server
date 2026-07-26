@@ -4,6 +4,7 @@ import { sendResponse } from '../utils/sendResponse.utils';
 import { catchAsync } from '../utils/catchAsync.utils';
 import AppError from '../utils/customError.utils';
 import { deleteFileFromCloudinary, upload } from '../utils/cloudinary.utils';
+import { getPaginationMetaData } from '../utils/pagination.utils';
 
 
 const folder = '/products';
@@ -11,7 +12,23 @@ const folder = '/products';
 export const getAllProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const filter: Record<string, any> = {};
-    const { query, category, brand, Price, minPrice, maxPrice, neqPrice } = req.query;
+    const { 
+        query, 
+        category, 
+        brand, 
+        Price, 
+        minPrice, 
+        maxPrice, 
+        neqPrice,
+        page = 1,
+        perPage = 10,
+        sortBy = 'createdAt',
+        order = 'DESC',
+    } = req.query;
+
+    const currentPage = Number(page);
+    const limit = Number(perPage);
+    const skip = (currentPage - 1) * limit;
 
     if (query) {
         filter.$or = [
@@ -67,11 +84,19 @@ export const getAllProducts = catchAsync(async (req: Request, res: Response, nex
 
     const products = await Product.find(filter)
         .populate('category')
-        .populate('brand');
+        .populate('brand')
+        .limit(limit)
+        .skip(skip)
+        .sort({ [sortBy as string]: order === 'DESC' ? -1 : 1});
+
+    const totalCount = await Product.countDocuments(filter);
 
     sendResponse(res, {
         message: 'Products Fetched Successfully',
-        data: products,
+        data: {
+            products,
+            pagination: getPaginationMetaData(totalCount, limit, currentPage),
+        },
         statusCode: 200,
     });
 });
