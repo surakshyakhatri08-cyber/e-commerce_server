@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const product_route_1 = __importDefault(require("./routes/product.route"));
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const brand_route_1 = __importDefault(require("./routes/brand.route"));
@@ -15,6 +16,9 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
+app.use((0, cors_1.default)({
+    origin: '*0,'
+}));
 //health route
 app.get('/', (req, res) => {
     res.status(200).json({

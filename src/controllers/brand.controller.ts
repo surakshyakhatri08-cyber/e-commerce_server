@@ -45,7 +45,6 @@ export const createBrand = catchAsync(async (req: Request, res: Response, next: 
             logo: newBrand.logo,
         },
         statusCode: 201,
-
     });
 });
 
